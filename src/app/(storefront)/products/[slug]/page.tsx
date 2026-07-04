@@ -9,7 +9,6 @@ import { ReviewList } from "@/components/storefront/review-list";
 import { ReviewForm } from "@/components/storefront/review-form";
 import { ProductCard } from "@/components/storefront/product-card";
 import { WishlistButton } from "@/components/storefront/wishlist-button";
-import { getWishlistProductIds } from "@/server/actions/wishlist";
 import { JsonLd } from "@/components/json-ld";
 import { buildProductJsonLd, buildBreadcrumbJsonLd } from "@/lib/structured-data";
 import { productInStock } from "@/lib/product-format";
@@ -19,6 +18,16 @@ const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL ?? "https://toycompany.store";
 
 interface PageProps {
   params: Promise<{ slug: string }>;
+}
+
+export const revalidate = 3600;
+
+export async function generateStaticParams() {
+  const products = await prisma.product.findMany({
+    where: { status: ProductStatus.ACTIVE },
+    select: { slug: true },
+  });
+  return products.map((p) => ({ slug: p.slug }));
 }
 
 async function getProduct(slug: string) {
@@ -87,9 +96,6 @@ export default async function ProductPage({ params }: PageProps) {
     },
     take: 4,
   });
-
-  const wishlistIds = await getWishlistProductIds();
-  const isWishlisted = wishlistIds.includes(product.id);
 
   const attributeSummary = new Map<string, Set<string>>();
   for (const variant of product.variants) {
@@ -160,7 +166,7 @@ export default async function ProductPage({ params }: PageProps) {
                 {product.name}
               </h1>
             </div>
-            <WishlistButton productId={product.id} initialInWishlist={isWishlisted} />
+            <WishlistButton productId={product.id} />
           </div>
           <div className="mt-2 flex items-center gap-1 text-sm">
             <div className="flex gap-0.5">
@@ -249,11 +255,7 @@ export default async function ProductPage({ params }: PageProps) {
           <h2 className="font-heading text-xl font-bold">You may also like</h2>
           <div className="mt-4 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
             {relatedProducts.map((related) => (
-              <ProductCard
-                key={related.id}
-                product={related}
-                isWishlisted={wishlistIds.includes(related.id)}
-              />
+              <ProductCard key={related.id} product={related} />
             ))}
           </div>
         </section>

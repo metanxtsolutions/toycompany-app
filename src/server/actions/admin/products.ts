@@ -148,6 +148,7 @@ export async function upsertProduct(id: string | null, input: unknown) {
   }
 
   revalidatePath("/admin/products");
+  revalidatePath(`/products/${data.slug}`);
   return { success: true as const };
 }
 
@@ -155,8 +156,9 @@ export async function deleteProduct(id: string) {
   const session = await getSessionIfAllowed(canManageCatalog);
   if (!session) return { success: false as const, error: "Not authorized." };
 
+  let deleted;
   try {
-    await prisma.product.delete({ where: { id } });
+    deleted = await prisma.product.delete({ where: { id } });
   } catch {
     return {
       success: false as const,
@@ -165,6 +167,7 @@ export async function deleteProduct(id: string) {
   }
 
   revalidatePath("/admin/products");
+  revalidatePath(`/products/${deleted.slug}`);
   return { success: true as const };
 }
 

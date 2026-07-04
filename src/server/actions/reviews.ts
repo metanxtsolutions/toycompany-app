@@ -4,6 +4,7 @@ import { z } from "zod";
 import { revalidatePath } from "next/cache";
 import { prisma } from "@/lib/prisma";
 import { auth } from "@/lib/auth";
+import { checkRateLimit } from "@/lib/rate-limit";
 
 const submitReviewSchema = z.object({
   productId: z.string().min(1),
@@ -17,6 +18,11 @@ export async function submitReview(input: unknown) {
   const session = await auth();
   if (!session?.user?.id) {
     return { success: false as const, error: "You must be signed in to leave a review." };
+  }
+
+  const { success: withinLimit } = checkRateLimit(`review:${session.user.id}`, 3, 10 * 60_000);
+  if (!withinLimit) {
+    return { success: false as const, error: "You're submitting reviews too quickly. Please try again later." };
   }
 
   const parsed = submitReviewSchema.safeParse(input);

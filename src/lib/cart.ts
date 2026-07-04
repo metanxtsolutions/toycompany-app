@@ -71,6 +71,7 @@ export async function getOrCreateCart() {
   cookieStore.set(CART_COOKIE, newToken, {
     httpOnly: true,
     sameSite: "lax",
+    secure: process.env.NODE_ENV === "production",
     maxAge: 60 * 60 * 24 * 30,
     path: "/",
   });
