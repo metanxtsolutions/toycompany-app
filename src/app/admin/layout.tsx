@@ -7,6 +7,7 @@ import {
   canManageCoupons,
   canManageBanners,
   canViewAnalytics,
+  canManageContent,
 } from "@/lib/admin-permissions";
 
 export default async function AdminLayout({
@@ -31,6 +32,8 @@ export default async function AdminLayout({
     { href: "/admin/coupons", label: "Coupons", show: canManageCoupons(role) },
     { href: "/admin/banners", label: "Banners", show: canManageBanners(role) },
     { href: "/admin/reviews", label: "Reviews", show: isStaff(role) },
+    { href: "/admin/blog", label: "Blog", show: canManageContent(role) },
+    { href: "/admin/settings", label: "Settings", show: canManageContent(role) },
   ].filter((link) => link.show);
 
   return (

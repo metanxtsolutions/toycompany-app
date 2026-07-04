@@ -41,3 +41,7 @@ export function canReplyToReviews(role: string | undefined) {
 export function canViewAnalytics(role: string | undefined) {
   return ELEVATED.includes(role as AdminRole);
 }
+
+export function canManageContent(role: string | undefined) {
+  return ELEVATED.includes(role as AdminRole);
+}

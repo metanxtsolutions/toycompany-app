@@ -33,6 +33,7 @@ interface CategoryInitialData {
   isActive: boolean;
   metaTitle: string | null;
   metaDescription: string | null;
+  metaKeywords: string | null;
   ogImage: string | null;
 }
 
@@ -62,6 +63,7 @@ export function CategoryForm({
   const [isActive, setIsActive] = useState(initialData?.isActive ?? true);
   const [metaTitle, setMetaTitle] = useState(initialData?.metaTitle ?? "");
   const [metaDescription, setMetaDescription] = useState(initialData?.metaDescription ?? "");
+  const [metaKeywords, setMetaKeywords] = useState(initialData?.metaKeywords ?? "");
   const [ogImage, setOgImage] = useState(initialData?.ogImage ?? "");
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -84,6 +86,7 @@ export function CategoryForm({
       isActive,
       metaTitle: metaTitle || undefined,
       metaDescription: metaDescription || undefined,
+      metaKeywords: metaKeywords || undefined,
       ogImage: ogImage || undefined,
     });
 
@@ -193,6 +196,14 @@ export function CategoryForm({
             rows={2}
             value={metaDescription}
             onChange={(e) => setMetaDescription(e.target.value)}
+          />
+        </div>
+        <div className="space-y-2">
+          <Label htmlFor="cat-metaKeywords">Meta keywords (comma-separated)</Label>
+          <Input
+            id="cat-metaKeywords"
+            value={metaKeywords}
+            onChange={(e) => setMetaKeywords(e.target.value)}
           />
         </div>
         <div className="space-y-2">

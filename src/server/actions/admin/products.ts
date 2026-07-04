@@ -32,6 +32,7 @@ const productSchema = z.object({
   compareAtPrice: z.number().positive().optional(),
   metaTitle: z.string().max(160).optional(),
   metaDescription: z.string().max(300).optional(),
+  metaKeywords: z.string().max(300).optional(),
   ogImage: z.string().url().optional().or(z.literal("")),
   images: z.array(imageSchema).min(1),
   variants: z.array(variantSchema).min(1),
@@ -76,6 +77,7 @@ export async function upsertProduct(id: string | null, input: unknown) {
     compareAtPrice: data.compareAtPrice ? Math.round(data.compareAtPrice * 100) : null,
     metaTitle: data.metaTitle || null,
     metaDescription: data.metaDescription || null,
+    metaKeywords: data.metaKeywords || null,
     ogImage: data.ogImage || null,
   };
 

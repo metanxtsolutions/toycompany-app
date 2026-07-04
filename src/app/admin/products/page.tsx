@@ -79,7 +79,7 @@ export default async function AdminProductsPage({ searchParams }: PageProps) {
                         Edit
                       </Button>
                       <DeleteButton
-                        onDelete={() => deleteProduct(product.id)}
+                        onDelete={deleteProduct.bind(null, product.id)}
                         confirmMessage={`Delete "${product.name}"? This can't be undone.`}
                       />
                     </div>

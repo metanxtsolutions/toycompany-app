@@ -56,6 +56,7 @@ interface ProductInitialData {
   compareAtPrice: number | null;
   metaTitle: string | null;
   metaDescription: string | null;
+  metaKeywords: string | null;
   ogImage: string | null;
   images: { url: string; altText: string | null }[];
   variants: {
@@ -111,6 +112,7 @@ export function ProductForm({
   );
   const [metaTitle, setMetaTitle] = useState(initialData?.metaTitle ?? "");
   const [metaDescription, setMetaDescription] = useState(initialData?.metaDescription ?? "");
+  const [metaKeywords, setMetaKeywords] = useState(initialData?.metaKeywords ?? "");
   const [ogImage, setOgImage] = useState(initialData?.ogImage ?? "");
   const [images, setImages] = useState<ImageRow[]>(
     initialData?.images.length
@@ -177,6 +179,7 @@ export function ProductForm({
       compareAtPrice: compareAtPrice ? Number(compareAtPrice) : undefined,
       metaTitle: metaTitle || undefined,
       metaDescription: metaDescription || undefined,
+      metaKeywords: metaKeywords || undefined,
       ogImage: ogImage || undefined,
       images: images
         .filter((img) => img.url.trim())
@@ -484,6 +487,14 @@ export function ProductForm({
             rows={2}
             value={metaDescription}
             onChange={(e) => setMetaDescription(e.target.value)}
+          />
+        </div>
+        <div className="space-y-2">
+          <Label htmlFor="p-metaKeywords">Meta keywords (comma-separated)</Label>
+          <Input
+            id="p-metaKeywords"
+            value={metaKeywords}
+            onChange={(e) => setMetaKeywords(e.target.value)}
           />
         </div>
         <div className="space-y-2">

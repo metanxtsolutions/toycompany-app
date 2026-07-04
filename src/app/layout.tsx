@@ -22,14 +22,30 @@ const spaceGrotesk = Space_Grotesk({
 
 const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? "https://toycompany.store";
 
+const defaultTitle = "Toy Company | RC Cars, Drones & Collectibles";
+const defaultDescription =
+  "Toy Company brings trending RC cars, RC bikes, drones, model kits, and collectibles to hobbyists across India.";
+
 export const metadata: Metadata = {
   metadataBase: new URL(siteUrl),
   title: {
-    default: "Toy Company | RC Cars, Drones & Collectibles",
+    default: defaultTitle,
     template: "%s | Toy Company",
   },
-  description:
-    "Toy Company brings trending RC cars, RC bikes, drones, model kits, and collectibles to hobbyists across India.",
+  description: defaultDescription,
+  openGraph: {
+    siteName: "Toy Company",
+    title: defaultTitle,
+    description: defaultDescription,
+    url: siteUrl,
+    type: "website",
+    locale: "en_IN",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: defaultTitle,
+    description: defaultDescription,
+  },
 };
 
 export default function RootLayout({

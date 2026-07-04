@@ -69,7 +69,7 @@ export default async function AdminCouponsPage() {
                       Edit
                     </Button>
                     <DeleteButton
-                      onDelete={() => deleteCoupon(coupon.id)}
+                      onDelete={deleteCoupon.bind(null, coupon.id)}
                       confirmMessage={`Delete coupon "${coupon.code}"?`}
                     />
                   </div>

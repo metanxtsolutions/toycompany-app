@@ -10,7 +10,12 @@ import { ReviewForm } from "@/components/storefront/review-form";
 import { ProductCard } from "@/components/storefront/product-card";
 import { WishlistButton } from "@/components/storefront/wishlist-button";
 import { getWishlistProductIds } from "@/server/actions/wishlist";
+import { JsonLd } from "@/components/json-ld";
+import { buildProductJsonLd, buildBreadcrumbJsonLd } from "@/lib/structured-data";
+import { productInStock } from "@/lib/product-format";
 import { Star } from "lucide-react";
+
+const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL ?? "https://toycompany.store";
 
 interface PageProps {
   params: Promise<{ slug: string }>;
@@ -39,10 +44,29 @@ export async function generateMetadata({
   const product = await getProduct(slug);
   if (!product) return {};
 
+  const title = product.metaTitle ?? product.name;
+  const description = product.metaDescription ?? product.description.slice(0, 160);
+  const url = `${SITE_URL}/products/${product.slug}`;
+  const image = product.ogImage ?? product.images[0]?.url;
+
   return {
-    title: product.metaTitle ?? product.name,
-    description: product.metaDescription ?? product.description.slice(0, 160),
-    openGraph: product.ogImage ? { images: [product.ogImage] } : undefined,
+    title,
+    description,
+    keywords: product.metaKeywords ?? undefined,
+    alternates: { canonical: url },
+    openGraph: {
+      title,
+      description,
+      url,
+      type: "website",
+      images: image ? [image] : undefined,
+    },
+    twitter: {
+      card: "summary_large_image",
+      title,
+      description,
+      images: image ? [image] : undefined,
+    },
   };
 }
 
@@ -77,8 +101,35 @@ export default async function ProductPage({ params }: PageProps) {
     }
   }
 
+  const productJsonLd = buildProductJsonLd({
+    name: product.name,
+    description: product.description,
+    slug: product.slug,
+    brand: product.brand,
+    images: product.images,
+    basePrice: product.basePrice,
+    inStock: productInStock(product),
+    avgRating: product.avgRating,
+    reviewCount: product.reviewCount,
+    reviews: product.reviews.map((r) => ({
+      rating: r.rating,
+      title: r.title,
+      body: r.body,
+      user: { name: r.user.name },
+    })),
+  });
+
+  const breadcrumbJsonLd = buildBreadcrumbJsonLd([
+    { name: "Home", url: "/" },
+    { name: product.category.name, url: `/category/${product.category.slug}` },
+    { name: product.name, url: `/products/${product.slug}` },
+  ]);
+
   return (
     <div className="mx-auto max-w-7xl px-4 py-10 pb-28 sm:px-6 sm:pb-10 lg:px-8">
+      <JsonLd data={productJsonLd} />
+      <JsonLd data={breadcrumbJsonLd} />
+
       <nav className="mb-6 text-sm text-muted-foreground">
         <Link href="/" className="hover:text-foreground">
           Home

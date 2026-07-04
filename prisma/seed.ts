@@ -2,6 +2,8 @@ import "dotenv/config";
 import { PrismaClient, ProductStatus } from "../src/generated/prisma/client";
 import { PrismaPg } from "@prisma/adapter-pg";
 import bcrypt from "bcryptjs";
+import { markdownToSafeHtml } from "../src/lib/markdown";
+import { ROBOTS_TXT_KEY, DEFAULT_ROBOTS_TXT } from "../src/lib/site-settings";
 
 const adapter = new PrismaPg({ connectionString: process.env.DATABASE_URL });
 const prisma = new PrismaClient({ adapter });
@@ -232,9 +234,16 @@ async function main() {
     },
   });
 
+  console.log("Seeding site settings...");
+  await prisma.siteSetting.upsert({
+    where: { key: ROBOTS_TXT_KEY },
+    update: {},
+    create: { key: ROBOTS_TXT_KEY, value: DEFAULT_ROBOTS_TXT },
+  });
+
   console.log("Seeding users...");
   const adminPasswordHash = await bcrypt.hash("Admin@12345", 12);
-  await prisma.user.upsert({
+  const admin = await prisma.user.upsert({
     where: { email: "admin@toycompany.store" },
     update: {},
     create: {
@@ -370,6 +379,79 @@ async function main() {
         reviewCount: aggregate._count,
       },
     });
+  }
+
+  console.log("Seeding blog posts...");
+
+  const blogSeeds = [
+    {
+      slug: "choosing-your-first-rc-monster-truck",
+      title: "Choosing Your First RC Monster Truck",
+      excerpt: "A quick guide to scale, drivetrain, and battery life so your first RC truck doesn't end up in a drawer.",
+      categoryTag: "Buying Guides",
+      coverImage: PLACEHOLDER_IMAGE("RC Truck Guide"),
+      markdown: `Getting into RC monster trucks is exciting, but the sheer number of specs can be overwhelming. Here's what actually matters.
+
+## Scale
+
+Most beginner-friendly trucks come in **1:16** or **1:10** scale. Smaller scales are cheaper and easier to store; larger scales are tougher and faster.
+
+## Drivetrain
+
+Look for **4WD** if you plan to drive off-road — it grips gravel, grass, and gravel far better than 2WD.
+
+## Battery life
+
+A 20-30 minute runtime is typical. Consider buying a spare battery on day one so you're never stuck waiting for a charge.
+
+Ready to pick one out? Check our [RC Cars collection](/category/rc-cars) for current picks.`,
+      publishedAt: new Date("2026-06-01"),
+    },
+    {
+      slug: "fpv-drone-racing-101",
+      title: "FPV Drone Racing 101",
+      excerpt: "Everything a first-time pilot needs to know before their first FPV flight.",
+      categoryTag: "Guides",
+      coverImage: PLACEHOLDER_IMAGE("FPV Drone Guide"),
+      markdown: `FPV (first-person view) racing drones are a different beast from camera drones — built for speed, not stability.
+
+## Start in a simulator
+
+Before you crash a real drone, practice in a flight simulator. It's the fastest way to build stick skills without buying replacement parts.
+
+## Know your gear
+
+- **Goggles** — first-person video feed from the drone's onboard camera
+- **Controller** — dual-stick radio transmitter
+- **Frame** — carbon fiber is light and durable
+
+## Find a legal place to fly
+
+Check local regulations before flying, especially near airports or crowded areas.
+
+Browse our [Drones collection](/category/drones) to see current FPV kits.`,
+      publishedAt: new Date("2026-06-15"),
+    },
+  ];
+
+  for (const post of blogSeeds) {
+    const contentHtml = markdownToSafeHtml(post.markdown);
+    await prisma.blogPost.upsert({
+      where: { slug: post.slug },
+      update: {},
+      create: {
+        title: post.title,
+        slug: post.slug,
+        excerpt: post.excerpt,
+        contentMarkdown: post.markdown,
+        contentHtml,
+        coverImage: post.coverImage,
+        categoryTag: post.categoryTag,
+        authorId: admin.id,
+        publishedAt: post.publishedAt,
+      },
+    });
+    console.log(`  - ${post.title}`);
   }
 
   console.log("Seed complete.");

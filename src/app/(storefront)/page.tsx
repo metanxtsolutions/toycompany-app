@@ -1,17 +1,43 @@
 import Link from "next/link";
+import Image from "next/image";
+import type { Metadata } from "next";
 import { Star } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { ProductCard } from "@/components/storefront/product-card";
 import { prisma } from "@/lib/prisma";
 import { ProductStatus, ReviewStatus } from "@/generated/prisma/client";
+import { JsonLd } from "@/components/json-ld";
+import { buildOrganizationJsonLd } from "@/lib/structured-data";
+
+const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL ?? "https://toycompany.store";
 
 export const revalidate = 60;
+
+export const metadata: Metadata = {
+  title: "Toy Company — RC Cars, Drones & Collectibles",
+  description:
+    "Toy Company brings the hottest RC cars, drones, model kits, and collectibles straight to hobbyists across India.",
+  alternates: { canonical: SITE_URL },
+  openGraph: {
+    title: "Toy Company — RC Cars, Drones & Collectibles",
+    description:
+      "Toy Company brings the hottest RC cars, drones, model kits, and collectibles straight to hobbyists across India.",
+    url: SITE_URL,
+    type: "website",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Toy Company — RC Cars, Drones & Collectibles",
+    description:
+      "Toy Company brings the hottest RC cars, drones, model kits, and collectibles straight to hobbyists across India.",
+  },
+};
 
 async function getHomepageData() {
   const now = new Date();
 
-  const [categories, banner, trendingProducts, testimonials] = await Promise.all([
+  const [categories, banner, trendingProducts, testimonials, latestPosts] = await Promise.all([
     prisma.category.findMany({
       where: { parentId: null, isActive: true },
       orderBy: { sortOrder: "asc" },
@@ -46,17 +72,23 @@ async function getHomepageData() {
         product: { select: { name: true } },
       },
     }),
+    prisma.blogPost.findMany({
+      where: { publishedAt: { lte: now } },
+      orderBy: { publishedAt: "desc" },
+      take: 3,
+    }),
   ]);
 
-  return { categories, banner, trendingProducts, testimonials };
+  return { categories, banner, trendingProducts, testimonials, latestPosts };
 }
 
 export default async function HomePage() {
-  const { categories, banner, trendingProducts, testimonials } =
+  const { categories, banner, trendingProducts, testimonials, latestPosts } =
     await getHomepageData();
 
   return (
     <div>
+      <JsonLd data={buildOrganizationJsonLd()} />
       <section className="relative overflow-hidden bg-gradient-to-br from-primary/15 via-background to-secondary/15">
         <div className="mx-auto flex max-w-7xl flex-col items-start gap-6 px-4 py-24 sm:px-6 lg:px-8">
           <span className="rounded-full bg-primary/15 px-3 py-1 text-xs font-semibold text-primary">
@@ -160,6 +192,58 @@ export default async function HomePage() {
                     </p>
                   </CardContent>
                 </Card>
+              ))}
+            </div>
+          </div>
+        </section>
+      )}
+
+      {latestPosts.length > 0 && (
+        <section className="border-t border-border">
+          <div className="mx-auto max-w-7xl px-4 py-16 sm:px-6 lg:px-8">
+            <div className="flex items-center justify-between">
+              <h2 className="font-heading text-2xl font-bold tracking-tight">
+                From the blog
+              </h2>
+              <Link
+                href="/blog"
+                className="text-sm font-medium text-primary hover:underline"
+              >
+                View all
+              </Link>
+            </div>
+            <div className="mt-6 grid gap-4 sm:grid-cols-3">
+              {latestPosts.map((post) => (
+                <Link key={post.id} href={`/blog/${post.slug}`}>
+                  <Card className="h-full overflow-hidden transition-shadow hover:shadow-lg">
+                    {post.coverImage && (
+                      <div className="relative aspect-video bg-muted">
+                        <Image
+                          src={post.coverImage}
+                          alt={post.title}
+                          fill
+                          sizes="(min-width: 640px) 33vw, 100vw"
+                          className="object-cover"
+                        />
+                      </div>
+                    )}
+                    <CardContent className="space-y-2 p-5">
+                      {post.categoryTag && (
+                        <span className="text-xs font-medium text-primary">
+                          {post.categoryTag}
+                        </span>
+                      )}
+                      <h3 className="font-heading text-lg font-semibold">
+                        {post.title}
+                      </h3>
+                      {post.excerpt && (
+                        <p className="text-sm text-muted-foreground">
+                          {post.excerpt}
+                        </p>
+                      )}
+                    </CardContent>
+                  </Card>
+                </Link>
               ))}
             </div>
           </div>

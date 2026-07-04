@@ -61,7 +61,7 @@ export default async function AdminCategoriesPage() {
                       Edit
                     </Button>
                     <DeleteButton
-                      onDelete={() => deleteCategory(category.id)}
+                      onDelete={deleteCategory.bind(null, category.id)}
                       confirmMessage={`Delete "${category.name}"? This can't be undone.`}
                     />
                   </div>

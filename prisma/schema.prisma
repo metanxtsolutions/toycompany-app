@@ -109,6 +109,7 @@ model Category {
 
   metaTitle       String?
   metaDescription String?
+  metaKeywords    String?
   ogImage         String?
 
   parentId String?
@@ -146,6 +147,7 @@ model Product {
 
   metaTitle       String?
   metaDescription String?
+  metaKeywords    String?
   ogImage         String?
 
   createdAt DateTime @default(now())
@@ -371,8 +373,9 @@ model BlogPost {
   id          String    @id @default(cuid())
   title       String
   slug        String    @unique
-  excerpt     String?
-  contentHtml String    @db.Text
+  excerpt         String?
+  contentMarkdown String    @db.Text
+  contentHtml     String    @db.Text
   coverImage  String?
   authorId    String?
   categoryTag String?
@@ -380,6 +383,7 @@ model BlogPost {
 
   metaTitle       String?
   metaDescription String?
+  metaKeywords    String?
   ogImage         String?
 
   createdAt DateTime @default(now())

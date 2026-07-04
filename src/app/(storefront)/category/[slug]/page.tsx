@@ -7,6 +7,10 @@ import { ProductCard } from "@/components/storefront/product-card";
 import { ProductFilters } from "@/components/storefront/product-filters";
 import { ProductSort as ProductSortSelect } from "@/components/storefront/product-sort";
 import { Button } from "@/components/ui/button";
+import { JsonLd } from "@/components/json-ld";
+import { buildBreadcrumbJsonLd } from "@/lib/structured-data";
+
+const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL ?? "https://toycompany.store";
 
 interface PageProps {
   params: Promise<{ slug: string }>;
@@ -27,9 +31,26 @@ export async function generateMetadata({
   const category = await getCategory(slug);
   if (!category) return {};
 
+  const title = category.metaTitle ?? category.name;
+  const description = category.metaDescription ?? category.description ?? undefined;
+  const url = `${SITE_URL}/category/${category.slug}`;
+
   return {
-    title: category.metaTitle ?? category.name,
-    description: category.metaDescription ?? category.description ?? undefined,
+    title,
+    description,
+    keywords: category.metaKeywords ?? undefined,
+    alternates: { canonical: url },
+    openGraph: {
+      title,
+      description,
+      url,
+      type: "website",
+    },
+    twitter: {
+      card: "summary_large_image",
+      title,
+      description,
+    },
   };
 }
 
@@ -68,8 +89,18 @@ export default async function CategoryPage({ params, searchParams }: PageProps) 
     getAvailableBrands(categoryIds),
   ]);
 
+  const breadcrumbJsonLd = buildBreadcrumbJsonLd([
+    { name: "Home", url: "/" },
+    ...(category.parent
+      ? [{ name: category.parent.name, url: `/category/${category.parent.slug}` }]
+      : []),
+    { name: category.name, url: `/category/${category.slug}` },
+  ]);
+
   return (
     <div className="mx-auto max-w-7xl px-4 py-10 sm:px-6 lg:px-8">
+      <JsonLd data={breadcrumbJsonLd} />
+
       <nav className="mb-4 text-sm text-muted-foreground">
         <Link href="/" className="hover:text-foreground">
           Home

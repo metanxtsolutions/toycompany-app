@@ -16,6 +16,7 @@ const categorySchema = z.object({
   isActive: z.boolean().default(true),
   metaTitle: z.string().max(160).optional(),
   metaDescription: z.string().max(300).optional(),
+  metaKeywords: z.string().max(300).optional(),
   ogImage: z.string().url().optional().or(z.literal("")),
 });
 

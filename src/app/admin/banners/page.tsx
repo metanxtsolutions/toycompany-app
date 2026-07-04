@@ -59,7 +59,7 @@ export default async function AdminBannersPage() {
                       Edit
                     </Button>
                     <DeleteButton
-                      onDelete={() => deleteBanner(banner.id)}
+                      onDelete={deleteBanner.bind(null, banner.id)}
                       confirmMessage={`Delete banner "${banner.title}"?`}
                     />
                   </div>
