@@ -8,6 +8,7 @@ import { getSessionIfAllowed } from "@/server/actions/admin/guard";
 
 const bannerSchema = z.object({
   title: z.string().min(2).max(160),
+  subtitle: z.string().max(200).optional(),
   imageUrl: z.string().url(),
   linkUrl: z.string().max(300).optional(),
   placement: z.enum(["HOME_HERO", "HOME_STRIP", "CATEGORY"]),
@@ -29,6 +30,7 @@ export async function upsertBanner(id: string | null, input: unknown) {
 
   const payload = {
     title: data.title,
+    subtitle: data.subtitle || null,
     imageUrl: data.imageUrl,
     linkUrl: data.linkUrl || null,
     placement: data.placement,

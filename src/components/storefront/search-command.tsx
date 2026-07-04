@@ -13,6 +13,7 @@ import {
   CommandItem,
 } from "@/components/ui/command";
 import { formatPriceINR } from "@/lib/product-format";
+import { useStorefrontPortalContainer } from "@/components/storefront/theme-scope";
 
 interface SuggestResult {
   products: { id: string; name: string; slug: string; basePrice: number }[];
@@ -21,6 +22,7 @@ interface SuggestResult {
 
 export function SearchCommand() {
   const router = useRouter();
+  const portalContainer = useStorefrontPortalContainer();
   const [open, setOpen] = useState(false);
   const [query, setQuery] = useState("");
   const [results, setResults] = useState<SuggestResult>({ products: [], categories: [] });
@@ -73,6 +75,7 @@ export function SearchCommand() {
         onOpenChange={setOpen}
         title="Search Toy Company"
         description="Search for products and categories"
+        container={portalContainer}
       >
         <CommandInput
           placeholder="Search RC cars, drones, collectibles…"

@@ -21,7 +21,7 @@ export function ProductGallery({
 
   return (
     <div className="space-y-3">
-      <div className="relative aspect-square overflow-hidden rounded-xl bg-muted">
+      <div className="relative aspect-square overflow-hidden rounded-2xl bg-muted ring-1 ring-foreground/10">
         {active ? (
           <Image
             src={active.url}
@@ -29,7 +29,7 @@ export function ProductGallery({
             fill
             priority
             sizes="(min-width: 1024px) 40vw, 100vw"
-            className="object-cover transition-transform duration-300 hover:scale-110"
+            className="object-cover transition-transform duration-500 hover:scale-110"
           />
         ) : null}
       </div>
@@ -39,10 +39,13 @@ export function ProductGallery({
             <button
               key={image.url + index}
               type="button"
+              aria-label={`Show image ${index + 1} of ${productName}`}
               onClick={() => setActiveIndex(index)}
               className={cn(
-                "relative size-16 shrink-0 overflow-hidden rounded-md border-2",
-                index === activeIndex ? "border-primary" : "border-transparent",
+                "relative size-16 shrink-0 cursor-pointer overflow-hidden rounded-lg border-2 transition-all",
+                index === activeIndex
+                  ? "border-primary"
+                  : "border-transparent opacity-60 hover:opacity-100",
               )}
             >
               <Image

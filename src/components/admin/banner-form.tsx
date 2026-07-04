@@ -19,6 +19,7 @@ import { upsertBanner } from "@/server/actions/admin/banners";
 interface BannerInitialData {
   id: string;
   title: string;
+  subtitle: string | null;
   imageUrl: string;
   linkUrl: string | null;
   placement: "HOME_HERO" | "HOME_STRIP" | "CATEGORY";
@@ -31,6 +32,7 @@ interface BannerInitialData {
 export function BannerForm({ initialData }: { initialData?: BannerInitialData }) {
   const router = useRouter();
   const [title, setTitle] = useState(initialData?.title ?? "");
+  const [subtitle, setSubtitle] = useState(initialData?.subtitle ?? "");
   const [imageUrl, setImageUrl] = useState(initialData?.imageUrl ?? "");
   const [linkUrl, setLinkUrl] = useState(initialData?.linkUrl ?? "");
   const [placement, setPlacement] = useState<"HOME_HERO" | "HOME_STRIP" | "CATEGORY">(
@@ -52,6 +54,7 @@ export function BannerForm({ initialData }: { initialData?: BannerInitialData })
 
     const result = await upsertBanner(initialData?.id ?? null, {
       title,
+      subtitle: subtitle || undefined,
       imageUrl,
       linkUrl: linkUrl || undefined,
       placement,
@@ -77,6 +80,15 @@ export function BannerForm({ initialData }: { initialData?: BannerInitialData })
       <div className="space-y-2">
         <Label htmlFor="banner-title">Title</Label>
         <Input id="banner-title" required value={title} onChange={(e) => setTitle(e.target.value)} />
+      </div>
+      <div className="space-y-2">
+        <Label htmlFor="banner-subtitle">Subtitle (optional)</Label>
+        <Input
+          id="banner-subtitle"
+          value={subtitle}
+          onChange={(e) => setSubtitle(e.target.value)}
+          placeholder="e.g. New Drop"
+        />
       </div>
       <div className="space-y-2">
         <Label htmlFor="banner-image">Image URL</Label>

@@ -41,6 +41,7 @@
   --color-card: var(--card);
   --color-brand-orange: var(--brand-orange);
   --color-brand-blue: var(--brand-blue);
+  --color-brand-lime: var(--brand-lime);
   --radius-sm: calc(var(--radius) * 0.6);
   --radius-md: calc(var(--radius) * 0.8);
   --radius-lg: var(--radius);
@@ -66,6 +67,7 @@
 
   --brand-orange: oklch(0.68 0.19 41);
   --brand-blue: oklch(0.55 0.22 259);
+  --brand-lime: oklch(0.83 0.22 128);
 
   --primary: var(--brand-orange);
   --primary-foreground: oklch(0.14 0.01 41);
@@ -105,6 +107,7 @@
 
   --brand-orange: oklch(0.72 0.18 41);
   --brand-blue: oklch(0.63 0.2 259);
+  --brand-lime: oklch(0.87 0.24 128);
 
   --primary: var(--brand-orange);
   --primary-foreground: oklch(0.14 0.01 41);
@@ -147,6 +150,6 @@
   h2,
   h3,
   h4 {
-    @apply font-heading;
+    @apply font-heading font-bold tracking-tight;
   }
 }

@@ -9,6 +9,7 @@ import { ReviewList } from "@/components/storefront/review-list";
 import { ReviewForm } from "@/components/storefront/review-form";
 import { ProductCard } from "@/components/storefront/product-card";
 import { WishlistButton } from "@/components/storefront/wishlist-button";
+import { RecentlyViewedTracker } from "@/components/storefront/recently-viewed-tracker";
 import { JsonLd } from "@/components/json-ld";
 import { buildProductJsonLd, buildBreadcrumbJsonLd } from "@/lib/structured-data";
 import { productInStock } from "@/lib/product-format";
@@ -133,6 +134,7 @@ export default async function ProductPage({ params }: PageProps) {
 
   return (
     <div className="mx-auto max-w-7xl px-4 py-10 pb-28 sm:px-6 sm:pb-10 lg:px-8">
+      <RecentlyViewedTracker productId={product.id} />
       <JsonLd data={productJsonLd} />
       <JsonLd data={breadcrumbJsonLd} />
 
@@ -158,11 +160,11 @@ export default async function ProductPage({ params }: PageProps) {
           <div className="flex items-start justify-between gap-2">
             <div>
               {product.brand ? (
-                <p className="text-sm font-medium text-muted-foreground">
+                <p className="text-xs font-bold tracking-widest text-primary uppercase">
                   {product.brand}
                 </p>
               ) : null}
-              <h1 className="font-heading mt-1 text-3xl font-bold tracking-tight">
+              <h1 className="font-heading mt-1 text-3xl font-bold tracking-tight sm:text-4xl">
                 {product.name}
               </h1>
             </div>

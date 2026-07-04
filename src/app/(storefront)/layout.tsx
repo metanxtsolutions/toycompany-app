@@ -1,5 +1,7 @@
 import { SiteHeader } from "@/components/storefront/site-header";
 import { SiteFooter } from "@/components/storefront/site-footer";
+import { ThemeScope } from "@/components/storefront/theme-scope";
+import { PromoStrip } from "@/components/storefront/home/promo-strip";
 
 export default function StorefrontLayout({
   children,
@@ -7,10 +9,11 @@ export default function StorefrontLayout({
   children: React.ReactNode;
 }) {
   return (
-    <div className="flex min-h-screen flex-col">
+    <ThemeScope>
+      <PromoStrip />
       <SiteHeader />
       <main className="flex-1">{children}</main>
       <SiteFooter />
-    </div>
+    </ThemeScope>
   );
 }

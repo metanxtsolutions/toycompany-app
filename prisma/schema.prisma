@@ -355,6 +355,7 @@ enum BannerPlacement {
 model Banner {
   id        String          @id @default(cuid())
   title     String
+  subtitle  String?
   imageUrl  String
   linkUrl   String?
   placement BannerPlacement

@@ -24,6 +24,7 @@ import {
   removeCartItem,
   applyCoupon,
 } from "@/server/actions/cart";
+import { useStorefrontPortalContainer } from "@/components/storefront/theme-scope";
 
 interface CartApiItem {
   id: string;
@@ -53,6 +54,7 @@ async function fetchCart(): Promise<CartApiResponse> {
 
 export function CartDrawer() {
   const queryClient = useQueryClient();
+  const portalContainer = useStorefrontPortalContainer();
   const [open, setOpen] = useState(false);
   const [couponCode, setCouponCode] = useState("");
   const [appliedCoupon, setAppliedCoupon] = useState<AppliedCoupon | null>(null);
@@ -113,7 +115,10 @@ export function CartDrawer() {
           </Badge>
         )}
       </SheetTrigger>
-      <SheetContent className="flex w-full flex-col sm:max-w-md">
+      <SheetContent
+        container={portalContainer}
+        className="flex w-full flex-col sm:max-w-md"
+      >
         <SheetHeader>
           <SheetTitle className="font-heading">Your Cart</SheetTitle>
         </SheetHeader>

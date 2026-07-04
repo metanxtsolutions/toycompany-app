@@ -8,8 +8,8 @@ import { ROBOTS_TXT_KEY, DEFAULT_ROBOTS_TXT } from "../src/lib/site-settings";
 const adapter = new PrismaPg({ connectionString: process.env.DATABASE_URL });
 const prisma = new PrismaClient({ adapter });
 
-const PLACEHOLDER_IMAGE = (seed: string) =>
-  `https://placehold.co/800x800/f2621a/ffffff?text=${encodeURIComponent(seed)}`;
+const PLACEHOLDER_IMAGE = (seed: string, width = 800, height = 800) =>
+  `https://picsum.photos/seed/${encodeURIComponent(seed)}/${width}/${height}`;
 
 async function main() {
   console.log("Seeding categories...");
@@ -21,6 +21,7 @@ async function main() {
       name: "RC Cars",
       slug: "rc-cars",
       description: "Off-road, drift, and race-ready remote control cars.",
+      image: PLACEHOLDER_IMAGE("category-rc-cars", 1200, 900),
       sortOrder: 1,
     },
   });
@@ -32,6 +33,7 @@ async function main() {
       name: "RC Drift Cars",
       slug: "rc-drift-cars",
       description: "Precision drift-tuned RC cars.",
+      image: PLACEHOLDER_IMAGE("category-rc-drift-cars", 1200, 900),
       parentId: rcCars.id,
       sortOrder: 1,
     },
@@ -44,6 +46,7 @@ async function main() {
       name: "Drones",
       slug: "drones",
       description: "Camera drones and racing quads.",
+      image: PLACEHOLDER_IMAGE("category-drones", 1200, 900),
       sortOrder: 2,
     },
   });
@@ -55,6 +58,7 @@ async function main() {
       name: "Model Kits",
       slug: "model-kits",
       description: "Build-it-yourself scale model kits.",
+      image: PLACEHOLDER_IMAGE("category-model-kits", 1200, 900),
       sortOrder: 3,
     },
   });
@@ -66,6 +70,7 @@ async function main() {
       name: "Collectibles",
       slug: "collectibles",
       description: "Limited-run figures and collector gear.",
+      image: PLACEHOLDER_IMAGE("category-collectibles", 1200, 900),
       sortOrder: 4,
     },
   });
@@ -194,7 +199,8 @@ async function main() {
         ...productData,
         images: {
           create: [
-            { url: PLACEHOLDER_IMAGE(p.name), altText: p.name, sortOrder: 0 },
+            { url: PLACEHOLDER_IMAGE(p.slug), altText: p.name, sortOrder: 0 },
+            { url: PLACEHOLDER_IMAGE(`${p.slug}-alt`), altText: `${p.name} — alternate angle`, sortOrder: 1 },
           ],
         },
         variants: {
@@ -226,7 +232,8 @@ async function main() {
     create: {
       id: "seed-banner-hero",
       title: "Build. Race. Collect.",
-      imageUrl: PLACEHOLDER_IMAGE("Hero Banner"),
+      subtitle: "New Drop",
+      imageUrl: PLACEHOLDER_IMAGE("hero-banner-2026", 1920, 1080),
       linkUrl: "/category/rc-cars",
       placement: "HOME_HERO",
       isActive: true,
@@ -389,7 +396,7 @@ async function main() {
       title: "Choosing Your First RC Monster Truck",
       excerpt: "A quick guide to scale, drivetrain, and battery life so your first RC truck doesn't end up in a drawer.",
       categoryTag: "Buying Guides",
-      coverImage: PLACEHOLDER_IMAGE("RC Truck Guide"),
+      coverImage: PLACEHOLDER_IMAGE("blog-rc-truck-guide", 1200, 630),
       markdown: `Getting into RC monster trucks is exciting, but the sheer number of specs can be overwhelming. Here's what actually matters.
 
 ## Scale
@@ -412,7 +419,7 @@ Ready to pick one out? Check our [RC Cars collection](/category/rc-cars) for cur
       title: "FPV Drone Racing 101",
       excerpt: "Everything a first-time pilot needs to know before their first FPV flight.",
       categoryTag: "Guides",
-      coverImage: PLACEHOLDER_IMAGE("FPV Drone Guide"),
+      coverImage: PLACEHOLDER_IMAGE("blog-fpv-drone-guide", 1200, 630),
       markdown: `FPV (first-person view) racing drones are a different beast from camera drones — built for speed, not stability.
 
 ## Start in a simulator
