@@ -1,6 +1,8 @@
 import Link from "next/link";
-import { Search, ShoppingCart, User } from "lucide-react";
+import { User } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { CartDrawer } from "@/components/storefront/cart-drawer";
+import { SearchCommand } from "@/components/storefront/search-command";
 
 const NAV_LINKS = [
   { href: "/category/rc-cars", label: "RC Cars" },
@@ -33,9 +35,7 @@ export function SiteHeader() {
         </nav>
 
         <div className="ml-auto flex items-center gap-1">
-          <Button variant="ghost" size="icon" aria-label="Search">
-            <Search className="size-5" />
-          </Button>
+          <SearchCommand />
           <Button
             variant="ghost"
             size="icon"
@@ -45,15 +45,7 @@ export function SiteHeader() {
           >
             <User className="size-5" />
           </Button>
-          <Button
-            variant="ghost"
-            size="icon"
-            aria-label="Cart"
-            nativeButton={false}
-            render={<Link href="/cart" />}
-          >
-            <ShoppingCart className="size-5" />
-          </Button>
+          <CartDrawer />
         </div>
       </div>
     </header>

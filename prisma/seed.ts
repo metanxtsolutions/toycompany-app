@@ -246,7 +246,7 @@ async function main() {
   });
 
   const customerPasswordHash = await bcrypt.hash("Customer@12345", 12);
-  await prisma.user.upsert({
+  const customer = await prisma.user.upsert({
     where: { email: "customer@example.com" },
     update: {},
     create: {
@@ -256,6 +256,121 @@ async function main() {
       role: "CUSTOMER",
     },
   });
+
+  const priya = await prisma.user.upsert({
+    where: { email: "priya.reviewer@example.com" },
+    update: {},
+    create: {
+      name: "Priya Sharma",
+      email: "priya.reviewer@example.com",
+      role: "CUSTOMER",
+    },
+  });
+
+  const arjun = await prisma.user.upsert({
+    where: { email: "arjun.reviewer@example.com" },
+    update: {},
+    create: {
+      name: "Arjun Mehta",
+      email: "arjun.reviewer@example.com",
+      role: "CUSTOMER",
+    },
+  });
+
+  console.log("Seeding reviews...");
+
+  const reviewSeeds: {
+    slug: string;
+    userId: string;
+    rating: number;
+    title: string;
+    body: string;
+  }[] = [
+    {
+      slug: "thunder-raptor-1-16-rc-monster-truck",
+      userId: priya.id,
+      rating: 5,
+      title: "Tears up the backyard",
+      body: "The 4WD grip on this thing is incredible — handled gravel and grass without slowing down. Battery lasts the full 30 minutes as advertised.",
+    },
+    {
+      slug: "thunder-raptor-1-16-rc-monster-truck",
+      userId: arjun.id,
+      rating: 4,
+      title: "Great build quality",
+      body: "Solid suspension and a tough shell. Only wish it came with a spare battery in the box.",
+    },
+    {
+      slug: "skyeye-4k-camera-drone",
+      userId: customer.id,
+      rating: 5,
+      title: "Footage is genuinely 4K",
+      body: "Return-to-home worked perfectly on my first flight, and the video quality is way above what I expected at this price.",
+    },
+    {
+      slug: "panda-mecha-gundam-model-kit",
+      userId: priya.id,
+      rating: 5,
+      title: "Snap-fit is satisfying",
+      body: "No glue needed, joints are sturdy, and the finished pose options are great for display.",
+    },
+    {
+      slug: "galaxy-warrior-collectible-figure",
+      userId: arjun.id,
+      rating: 4,
+      title: "Paint job is clean",
+      body: "Hand-painted details are crisp and the display base feels premium. Shipping box could be sturdier.",
+    },
+    {
+      slug: "galaxy-warrior-collectible-figure",
+      userId: customer.id,
+      rating: 5,
+      title: "Centerpiece of my shelf now",
+      body: "Better in person than in photos. Very happy with this one.",
+    },
+  ];
+
+  for (const review of reviewSeeds) {
+    const product = await prisma.product.findUnique({ where: { slug: review.slug } });
+    if (!product) continue;
+
+    const existing = await prisma.review.findFirst({
+      where: { productId: product.id, userId: review.userId },
+    });
+    if (existing) continue;
+
+    await prisma.review.create({
+      data: {
+        productId: product.id,
+        userId: review.userId,
+        rating: review.rating,
+        title: review.title,
+        body: review.body,
+        status: "APPROVED",
+      },
+    });
+  }
+
+  console.log("Recalculating product ratings...");
+  const reviewedSlugs = [...new Set(reviewSeeds.map((r) => r.slug))];
+  for (const slug of reviewedSlugs) {
+    const product = await prisma.product.findUnique({ where: { slug } });
+    if (!product) continue;
+
+    const aggregate = await prisma.review.aggregate({
+      where: { productId: product.id, status: "APPROVED" },
+      _avg: { rating: true },
+      _count: true,
+    });
+
+    await prisma.product.update({
+      where: { id: product.id },
+      data: {
+        avgRating: aggregate._avg.rating ?? 0,
+        reviewCount: aggregate._count,
+      },
+    });
+  }
 
   console.log("Seed complete.");
 }

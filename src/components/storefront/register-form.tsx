@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { registerUser } from "@/server/actions/auth";
+import { mergeGuestCart } from "@/server/actions/cart";
 
 export function RegisterForm() {
   const router = useRouter();
@@ -42,6 +43,7 @@ export function RegisterForm() {
       return;
     }
 
+    await mergeGuestCart();
     router.push("/");
     router.refresh();
   }

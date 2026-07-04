@@ -1,7 +1,10 @@
 "use server";
 
 import bcrypt from "bcryptjs";
+import { z } from "zod";
+import { revalidatePath } from "next/cache";
 import { prisma } from "@/lib/prisma";
+import { auth } from "@/lib/auth";
 import { registerSchema } from "@/lib/validation/auth";
 
 export type RegisterResult =
@@ -30,4 +33,28 @@ export async function registerUser(
   });
 
   return { success: true };
+}
+
+const updateProfileSchema = z.object({
+  name: z.string().min(2).max(80),
+});
+
+export async function updateProfile(input: unknown) {
+  const session = await auth();
+  if (!session?.user?.id) {
+    return { success: false as const, error: "Not authenticated." };
+  }
+
+  const parsed = updateProfileSchema.safeParse(input);
+  if (!parsed.success) {
+    return { success: false as const, error: "Please enter a valid name." };
+  }
+
+  await prisma.user.update({
+    where: { id: session.user.id },
+    data: { name: parsed.data.name },
+  });
+
+  revalidatePath("/account/profile");
+  return { success: true as const };
 }

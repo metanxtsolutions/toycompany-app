@@ -15,7 +15,7 @@ const FOOTER_LINKS = [
   {
     heading: "Support",
     links: [
-      { href: "/account/orders", label: "Track Order" },
+      { href: "/track-order", label: "Track Order" },
       { href: "/contact", label: "Contact Us" },
       { href: "/faq", label: "FAQ" },
     ],

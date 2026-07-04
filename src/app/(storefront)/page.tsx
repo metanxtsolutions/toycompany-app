@@ -1,15 +1,60 @@
 import Link from "next/link";
+import { Star } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
+import { ProductCard } from "@/components/storefront/product-card";
+import { prisma } from "@/lib/prisma";
+import { ProductStatus, ReviewStatus } from "@/generated/prisma/client";
 
-const FEATURED_CATEGORIES = [
-  { slug: "rc-cars", name: "RC Cars", blurb: "Off-road, drift, and race-ready" },
-  { slug: "drones", name: "Drones", blurb: "Camera drones & racing quads" },
-  { slug: "model-kits", name: "Model Kits", blurb: "Build-it-yourself scale kits" },
-  { slug: "collectibles", name: "Collectibles", blurb: "Limited-run figures & gear" },
-];
+export const revalidate = 60;
 
-export default function HomePage() {
+async function getHomepageData() {
+  const now = new Date();
+
+  const [categories, banner, trendingProducts, testimonials] = await Promise.all([
+    prisma.category.findMany({
+      where: { parentId: null, isActive: true },
+      orderBy: { sortOrder: "asc" },
+      take: 4,
+    }),
+    prisma.banner.findFirst({
+      where: {
+        placement: "HOME_HERO",
+        isActive: true,
+        AND: [
+          { OR: [{ startsAt: null }, { startsAt: { lte: now } }] },
+          { OR: [{ endsAt: null }, { endsAt: { gte: now } }] },
+        ],
+      },
+      orderBy: { sortOrder: "asc" },
+    }),
+    prisma.product.findMany({
+      where: { status: ProductStatus.ACTIVE },
+      orderBy: [{ reviewCount: "desc" }, { avgRating: "desc" }],
+      take: 8,
+      include: {
+        images: { orderBy: { sortOrder: "asc" }, take: 1 },
+        variants: { where: { isActive: true } },
+      },
+    }),
+    prisma.review.findMany({
+      where: { status: ReviewStatus.APPROVED, rating: { gte: 4 } },
+      orderBy: { createdAt: "desc" },
+      take: 3,
+      include: {
+        user: { select: { name: true } },
+        product: { select: { name: true } },
+      },
+    }),
+  ]);
+
+  return { categories, banner, trendingProducts, testimonials };
+}
+
+export default async function HomePage() {
+  const { categories, banner, trendingProducts, testimonials } =
+    await getHomepageData();
+
   return (
     <div>
       <section className="relative overflow-hidden bg-gradient-to-br from-primary/15 via-background to-secondary/15">
@@ -18,7 +63,7 @@ export default function HomePage() {
             Now trending across India
           </span>
           <h1 className="font-heading max-w-2xl text-4xl font-bold tracking-tight sm:text-6xl">
-            Build. Race. Collect.
+            {banner?.title ?? "Build. Race. Collect."}
           </h1>
           <p className="max-w-xl text-lg text-muted-foreground">
             Toy Company brings the hottest RC cars, drones, model kits, and
@@ -29,7 +74,7 @@ export default function HomePage() {
             <Button
               size="lg"
               nativeButton={false}
-              render={<Link href="/category/rc-cars" />}
+              render={<Link href={banner?.linkUrl ?? "/category/rc-cars"} />}
             >
               Shop RC Cars
             </Button>
@@ -50,16 +95,18 @@ export default function HomePage() {
           Shop by category
         </h2>
         <div className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-          {FEATURED_CATEGORIES.map((category) => (
+          {categories.map((category) => (
             <Link key={category.slug} href={`/category/${category.slug}`}>
               <Card className="h-full transition-shadow hover:shadow-lg">
                 <CardContent className="flex h-40 flex-col justify-end">
                   <h3 className="font-heading text-lg font-semibold">
                     {category.name}
                   </h3>
-                  <p className="text-sm text-muted-foreground">
-                    {category.blurb}
-                  </p>
+                  {category.description ? (
+                    <p className="text-sm text-muted-foreground">
+                      {category.description}
+                    </p>
+                  ) : null}
                 </CardContent>
               </Card>
             </Link>
@@ -67,14 +114,66 @@ export default function HomePage() {
         </div>
       </section>
 
-      <section className="border-t border-border bg-muted/30">
+      {trendingProducts.length > 0 && (
+        <section className="mx-auto max-w-7xl px-4 pb-16 sm:px-6 lg:px-8">
+          <h2 className="font-heading text-2xl font-bold tracking-tight">
+            Trending now
+          </h2>
+          <div className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+            {trendingProducts.map((product) => (
+              <ProductCard key={product.id} product={product} />
+            ))}
+          </div>
+        </section>
+      )}
+
+      {testimonials.length > 0 && (
+        <section className="border-t border-border bg-muted/30">
+          <div className="mx-auto max-w-7xl px-4 py-16 sm:px-6 lg:px-8">
+            <h2 className="font-heading text-2xl font-bold tracking-tight">
+              What hobbyists are saying
+            </h2>
+            <div className="mt-6 grid gap-4 sm:grid-cols-3">
+              {testimonials.map((review) => (
+                <Card key={review.id}>
+                  <CardContent className="space-y-2 p-5">
+                    <div className="flex gap-0.5">
+                      {Array.from({ length: 5 }).map((_, i) => (
+                        <Star
+                          key={i}
+                          className={`size-4 ${
+                            i < review.rating
+                              ? "fill-primary text-primary"
+                              : "text-muted-foreground"
+                          }`}
+                        />
+                      ))}
+                    </div>
+                    <p className="text-sm">
+                      {review.title ? (
+                        <span className="font-semibold">{review.title} — </span>
+                      ) : null}
+                      {review.body}
+                    </p>
+                    <p className="text-xs text-muted-foreground">
+                      {review.user.name ?? "Verified buyer"} · {review.product.name}
+                    </p>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+          </div>
+        </section>
+      )}
+
+      <section className="border-t border-border">
         <div className="mx-auto max-w-7xl px-4 py-16 text-center sm:px-6 lg:px-8">
           <h2 className="font-heading text-2xl font-bold tracking-tight">
-            The catalog is warming up
+            Ready to start your next build?
           </h2>
           <p className="mx-auto mt-2 max-w-md text-muted-foreground">
-            Product listings, search, and checkout are landing in the next
-            build phase. Create an account now to be first in line.
+            Create an account to track orders, save your wishlist, and get
+            early access to new drops.
           </p>
           <Button
             className="mt-6"

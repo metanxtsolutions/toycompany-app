@@ -6,6 +6,7 @@ import { signIn } from "next-auth/react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { mergeGuestCart } from "@/server/actions/cart";
 
 export function LoginForm() {
   const router = useRouter();
@@ -33,6 +34,7 @@ export function LoginForm() {
       return;
     }
 
+    await mergeGuestCart();
     router.push(searchParams.get("callbackUrl") ?? "/");
     router.refresh();
   }
