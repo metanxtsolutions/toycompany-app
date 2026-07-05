@@ -151,7 +151,7 @@ export function VariantSelector({
         )}
       </p>
 
-      <div className="flex items-center gap-3">
+      <div className="flex flex-wrap items-center gap-3">
         <div className="flex items-center rounded-md border border-input">
           <Button
             type="button"
@@ -176,7 +176,13 @@ export function VariantSelector({
           </Button>
         </div>
 
-        <div className={compact ? "flex flex-1 gap-2" : "hidden flex-1 gap-2 sm:flex"}>
+        <div
+          className={
+            compact
+              ? "flex min-w-52 flex-1 gap-2"
+              : "hidden min-w-52 flex-1 gap-2 sm:flex"
+          }
+        >
           <Button
             variant="secondary"
             className="flex-1"
