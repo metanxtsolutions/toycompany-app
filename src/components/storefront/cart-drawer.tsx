@@ -74,14 +74,45 @@ export function CartDrawer() {
     appliedCoupon,
   );
 
+  /**
+   * Optimistic updates: the UI changes instantly and the server syncs in the
+   * background — a round trip per click felt sluggish on real-world latency.
+   * On failure we refetch, which rolls the cache back to server truth.
+   */
+  function applyLocalCartUpdate(itemId: string, quantity: number) {
+    queryClient.setQueryData<CartApiResponse>(["cart"], (old) => {
+      if (!old) return old;
+      const items = old.items
+        .map((item) => (item.id === itemId ? { ...item, quantity } : item))
+        .filter((item) => item.quantity > 0);
+      return {
+        items,
+        subtotal: items.reduce(
+          (sum, item) =>
+            sum + (item.variant.priceOverride ?? item.product.basePrice) * item.quantity,
+          0,
+        ),
+        itemCount: items.reduce((sum, item) => sum + item.quantity, 0),
+      };
+    });
+  }
+
   async function handleQuantityChange(itemId: string, quantity: number) {
-    await updateCartItem({ itemId, quantity });
-    queryClient.invalidateQueries({ queryKey: ["cart"] });
+    if (quantity < 0 || quantity > 20) return;
+    applyLocalCartUpdate(itemId, quantity);
+    const result = await updateCartItem({ itemId, quantity });
+    if (!result.success) {
+      toast.error(result.error);
+      queryClient.invalidateQueries({ queryKey: ["cart"] });
+    }
   }
 
   async function handleRemove(itemId: string) {
-    await removeCartItem(itemId);
-    queryClient.invalidateQueries({ queryKey: ["cart"] });
+    applyLocalCartUpdate(itemId, 0);
+    const result = await removeCartItem(itemId);
+    if (!result.success) {
+      queryClient.invalidateQueries({ queryKey: ["cart"] });
+    }
   }
 
   async function handleApplyCoupon() {

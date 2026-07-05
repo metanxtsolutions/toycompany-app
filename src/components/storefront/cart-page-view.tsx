@@ -31,7 +31,7 @@ interface CartPageItem {
 }
 
 export function CartPageView({
-  items,
+  items: initialItems,
   initialCouponCode,
 }: {
   items: CartPageItem[];
@@ -39,6 +39,8 @@ export function CartPageView({
 }) {
   const router = useRouter();
   const queryClient = useQueryClient();
+  // Local copy for instant quantity/remove feedback; server syncs in background.
+  const [items, setItems] = useState(initialItems);
   const [couponCode, setCouponCode] = useState(initialCouponCode ?? "");
   const [appliedCoupon, setAppliedCoupon] = useState<{
     code: string;
@@ -67,19 +69,40 @@ export function CartPageView({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  function refresh() {
+  function applyLocalUpdate(itemId: string, quantity: number) {
+    setItems((current) =>
+      current
+        .map((item) => (item.id === itemId ? { ...item, quantity } : item))
+        .filter((item) => item.quantity > 0),
+    );
+  }
+
+  function rollback() {
     router.refresh();
     queryClient.invalidateQueries({ queryKey: ["cart"] });
   }
 
   async function handleQuantityChange(itemId: string, quantity: number) {
-    await updateCartItem({ itemId, quantity });
-    refresh();
+    if (quantity < 0 || quantity > 20) return;
+    applyLocalUpdate(itemId, quantity);
+    const result = await updateCartItem({ itemId, quantity });
+    if (!result.success) {
+      toast.error(result.error);
+      rollback();
+      return;
+    }
+    // Keep the header cart badge in sync without blocking the UI.
+    queryClient.invalidateQueries({ queryKey: ["cart"] });
   }
 
   async function handleRemove(itemId: string) {
-    await removeCartItem(itemId);
-    refresh();
+    applyLocalUpdate(itemId, 0);
+    const result = await removeCartItem(itemId);
+    if (!result.success) {
+      rollback();
+      return;
+    }
+    queryClient.invalidateQueries({ queryKey: ["cart"] });
   }
 
   async function handleApplyCoupon() {
