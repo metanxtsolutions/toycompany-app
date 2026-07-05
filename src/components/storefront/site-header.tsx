@@ -1,9 +1,8 @@
 import Link from "next/link";
-import { User } from "lucide-react";
-import { Button } from "@/components/ui/button";
 import { CartDrawer } from "@/components/storefront/cart-drawer";
 import { SearchCommand } from "@/components/storefront/search-command";
 import { MobileNav } from "@/components/storefront/mobile-nav";
+import { AccountLink } from "@/components/storefront/account-link";
 
 const NAV_LINKS = [
   { href: "/category/rc-cars", label: "RC Cars" },
@@ -39,16 +38,7 @@ export function SiteHeader() {
 
         <div className="ml-auto flex items-center gap-1">
           <SearchCommand />
-          <Button
-            variant="ghost"
-            size="icon"
-            aria-label="Account"
-            className="hidden sm:inline-flex"
-            nativeButton={false}
-            render={<Link href="/login" />}
-          >
-            <User className="size-5" />
-          </Button>
+          <AccountLink />
           <CartDrawer />
         </div>
       </div>

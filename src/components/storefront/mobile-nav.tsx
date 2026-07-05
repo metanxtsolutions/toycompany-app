@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
+import { useSession } from "next-auth/react";
 import { Menu, User } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
@@ -16,6 +17,7 @@ import { useStorefrontPortalContainer } from "@/components/storefront/theme-scop
 
 export function MobileNav({ links }: { links: { href: string; label: string }[] }) {
   const portalContainer = useStorefrontPortalContainer();
+  const { data: session } = useSession();
   const [open, setOpen] = useState(false);
 
   return (
@@ -51,11 +53,11 @@ export function MobileNav({ links }: { links: { href: string; label: string }[] 
           ))}
           <Separator className="my-2" />
           <Link
-            href="/login"
+            href={session?.user ? "/account/orders" : "/login"}
             onClick={() => setOpen(false)}
             className="flex items-center gap-2 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors hover:bg-muted"
           >
-            <User className="size-4" /> Account
+            <User className="size-4" /> {session?.user ? "My Account" : "Account"}
           </Link>
         </nav>
       </SheetContent>
