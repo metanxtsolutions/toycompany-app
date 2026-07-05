@@ -2,11 +2,12 @@
 
 import { useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
-import { signIn } from "next-auth/react";
+import { signIn, getSession } from "next-auth/react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { mergeGuestCart } from "@/server/actions/cart";
+import { isStaff } from "@/lib/admin-permissions";
 
 export function LoginForm() {
   const router = useRouter();
@@ -35,7 +36,15 @@ export function LoginForm() {
     }
 
     await mergeGuestCart();
-    router.push(searchParams.get("callbackUrl") ?? "/");
+
+    const callbackUrl = searchParams.get("callbackUrl");
+    if (callbackUrl) {
+      router.push(callbackUrl);
+    } else {
+      // Staff accounts land on the admin dashboard; everyone else on the storefront.
+      const session = await getSession();
+      router.push(isStaff(session?.user?.role) ? "/admin" : "/");
+    }
     router.refresh();
   }
 
