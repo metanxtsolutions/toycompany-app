@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono, Space_Grotesk } from "next/font/google";
 import { Toaster } from "@/components/ui/sonner";
+import { CSP_META_VALUE } from "@/lib/csp";
 import { QueryProvider } from "@/components/providers/query-provider";
 import { SessionProvider } from "@/components/providers/session-provider";
 import "./globals.css";
@@ -59,6 +60,9 @@ export default function RootLayout({
       className={`${geistSans.variable} ${geistMono.variable} ${spaceGrotesk.variable} h-full antialiased`}
     >
       <body className="min-h-full flex flex-col">
+        {/* React hoists this into <head>. Backstop for hosts whose CDN
+            overrides the CSP response header (see src/lib/csp.ts). */}
+        <meta httpEquiv="Content-Security-Policy" content={CSP_META_VALUE} />
         <SessionProvider>
           <QueryProvider>
             {children}
