@@ -56,10 +56,15 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
     }),
   ],
   callbacks: {
-    jwt: ({ token, user }) => {
+    jwt: async ({ token, user }) => {
       if (user) {
         token.role = user.role;
         token.id = user.id;
+        const dbUser = await prisma.user.findUnique({
+          where: { id: user.id },
+          select: { phoneVerified: true },
+        });
+        token.phoneVerified = Boolean(dbUser?.phoneVerified);
       }
       return token;
     },
@@ -67,8 +72,19 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
       if (session.user) {
         session.user.id = token.id as string;
         session.user.role = token.role as string;
+        session.user.phoneVerified = token.phoneVerified as boolean | undefined;
       }
       return session;
+    },
+  },
+  events: {
+    signIn: async ({ user }) => {
+      if (user.id) {
+        await prisma.user.update({
+          where: { id: user.id },
+          data: { lastLoginAt: new Date() },
+        });
+      }
     },
   },
 });

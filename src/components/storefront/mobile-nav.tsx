@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { useSession } from "next-auth/react";
+import { useSession, signOut } from "next-auth/react";
 import { Menu, User } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
@@ -59,6 +59,18 @@ export function MobileNav({ links }: { links: { href: string; label: string }[] 
           >
             <User className="size-4" /> {session?.user ? "My Account" : "Account"}
           </Link>
+          {session?.user && (
+            <button
+              type="button"
+              onClick={() => {
+                setOpen(false);
+                signOut({ callbackUrl: "/" });
+              }}
+              className="flex items-center gap-2 rounded-lg px-3 py-2.5 text-left text-sm font-medium text-destructive transition-colors hover:bg-muted"
+            >
+              Logout
+            </button>
+          )}
         </nav>
       </SheetContent>
     </Sheet>

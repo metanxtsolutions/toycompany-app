@@ -13,16 +13,24 @@ export function RegisterForm() {
   const router = useRouter();
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
+  const [phone, setPhone] = useState("");
   const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     setError(null);
+
+    if (password !== confirmPassword) {
+      setError("Passwords do not match.");
+      return;
+    }
+
     setIsSubmitting(true);
 
-    const result = await registerUser({ name, email, password });
+    const result = await registerUser({ name, email, phone, password, confirmPassword });
 
     if (!result.success) {
       setError(result.error);
@@ -44,7 +52,7 @@ export function RegisterForm() {
     }
 
     await mergeGuestCart();
-    router.push("/");
+    router.push("/register/verify-phone");
     router.refresh();
   }
 
@@ -70,6 +78,17 @@ export function RegisterForm() {
         />
       </div>
       <div className="space-y-2">
+        <Label htmlFor="phone">Mobile number</Label>
+        <Input
+          id="phone"
+          type="tel"
+          required
+          placeholder="+91XXXXXXXXXX"
+          value={phone}
+          onChange={(e) => setPhone(e.target.value)}
+        />
+      </div>
+      <div className="space-y-2">
         <Label htmlFor="password">Password</Label>
         <Input
           id="password"
@@ -78,6 +97,17 @@ export function RegisterForm() {
           minLength={8}
           value={password}
           onChange={(e) => setPassword(e.target.value)}
+        />
+      </div>
+      <div className="space-y-2">
+        <Label htmlFor="confirmPassword">Confirm password</Label>
+        <Input
+          id="confirmPassword"
+          type="password"
+          required
+          minLength={8}
+          value={confirmPassword}
+          onChange={(e) => setConfirmPassword(e.target.value)}
         />
       </div>
       {error && <p className="text-sm text-destructive">{error}</p>}
